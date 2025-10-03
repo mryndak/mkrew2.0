@@ -62,6 +62,19 @@ services:
         condition: service_started
     restart: unless-stopped
 
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: mkrew-frontend
+    ports:
+      - "4321:4321"
+    networks:
+      - mkrew-network
+    depends_on:
+      - backend
+    restart: unless-stopped
+
 networks:
   mkrew-network:
     driver: bridge
