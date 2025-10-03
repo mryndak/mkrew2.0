@@ -1,0 +1,46 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: mkrew-postgres
+    environment:
+      POSTGRES_DB: mkrew
+      POSTGRES_USER: mkrew
+      POSTGRES_PASSWORD: mkrew123
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - mkrew-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U mkrew"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  scraper:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: mkrew-scraper
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/mkrew
+      SPRING_DATASOURCE_USERNAME: mkrew
+      SPRING_DATASOURCE_PASSWORD: mkrew123
+    ports:
+      - "8080:8080"
+    networks:
+      - mkrew-network
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+
+networks:
+  mkrew-network:
+    driver: bridge
+
+volumes:
+  postgres_data:
