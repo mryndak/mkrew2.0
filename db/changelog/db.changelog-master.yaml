@@ -7,3 +7,5 @@ databaseChangeLog:
       file: db/changelog/changes/003-create-scraping-log-table.yaml
   - include:
       file: db/changelog/changes/004-create-users-table.yaml
+  - include:
+      file: db/changelog/changes/005-create-forecast-tables.yaml

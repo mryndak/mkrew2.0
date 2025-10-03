@@ -38,4 +38,14 @@ public interface BloodInventoryRecordRepository extends JpaRepository<BloodInven
     @Query("SELECT b FROM BloodInventoryRecord b WHERE b.rckik = :rckik AND b.id IN " +
            "(SELECT MAX(b2.id) FROM BloodInventoryRecord b2 WHERE b2.rckik = :rckik GROUP BY b2.bloodType)")
     List<BloodInventoryRecord> findLatestByRckik(@Param("rckik") RCKiK rckik);
+
+    @Query("SELECT b FROM BloodInventoryRecord b WHERE b.rckik.id = :rckikId " +
+           "AND b.bloodType = :bloodType AND b.recordedAt BETWEEN :startDate AND :endDate " +
+           "ORDER BY b.recordedAt ASC")
+    List<BloodInventoryRecord> findByRckikIdAndBloodTypeAndRecordedAtBetween(
+        @Param("rckikId") Long rckikId,
+        @Param("bloodType") BloodType bloodType,
+        @Param("startDate") LocalDateTime startDate,
+        @Param("endDate") LocalDateTime endDate
+    );
 }
