@@ -87,7 +87,7 @@ public class MLForecastResponse {
             this.confidenceUpper = confidenceUpper;
         }
 
-        public Double getConfideLevel() {
+        public Double getConfidenceLevel() {
             return confidenceLevel;
         }
 

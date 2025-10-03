@@ -219,31 +219,49 @@ ml/
 **Technologia:**
 - Python 3.11
 - Flask 3.0.0 (REST API)
-- statsmodels 0.14.1 (ARIMA)
+- statsmodels 0.14.1 (ARIMA, SARIMA)
+- prophet 1.1.5 (Facebook Prophet)
+- tensorflow 2.15.0 (LSTM)
 - pandas, numpy (przetwarzanie danych)
 - scikit-learn (ML utilities)
 - gunicorn (production server)
 
 **Port:** 5000
 
-**Zaimplementowane modele:**
-1. ✅ **ARIMA(1,1,1)** - AutoRegressive Integrated Moving Average
+**✅ Zaimplementowane modele (WSZYSTKIE 4):**
+
+1. **ARIMA(1,1,1)** - AutoRegressive Integrated Moving Average
    - Parametry: p=1, d=1, q=1
-   - Horyzont: 1-7 dni
-   - Confidence intervals: 95%
-   - Automatyczne mapowanie statusów
+   - Minimum danych: 10 punktów
+   - Horyzont: 1-7 dni (krótkoterminowy)
+   - Najszybszy model
+
+2. **PROPHET** - Facebook Prophet
+   - Sezonowość: multiplicative
+   - Minimum danych: 14 punktów
+   - Horyzont: 1-30 dni (średnio/długoterminowy)
+   - Uwzględnia święta i wzorce tygodniowe
+
+3. **SARIMA(1,1,1)x(1,1,1,7)** - Seasonal ARIMA
+   - Sezonowość: 7 dni (tygodniowa)
+   - Minimum danych: 14 punktów
+   - Horyzont: 1-14 dni
+   - Wykrywa cykliczne wzorce
+
+4. **LSTM** - Long Short-Term Memory (Deep Learning)
+   - Lookback: 7 dni
+   - LSTM units: 50
+   - Epochs: 50
+   - Minimum danych: 27 punktów
+   - Najdokładniejszy dla złożonych wzorców
 
 **API endpoints:**
 - ✅ `GET /health` - Health check
 - ✅ `POST /api/forecast` - Generowanie prognozy
-  - Input: historyczne dane + parametry modelu
+  - Wspiera: ARIMA, PROPHET, SARIMA, LSTM
+  - Input: historyczne dane + typ modelu + horyzont
   - Output: prognozy z interwałami ufności
-- ✅ `GET /api/models` - Lista dostępnych modeli
-
-**Modele do implementacji w przyszłości:**
-- 🔄 **Prophet** - Facebook's forecasting tool
-- 🔄 **SARIMA** - Seasonal ARIMA
-- 🔄 **LSTM** - Deep learning
+- ✅ `GET /api/models` - Lista dostępnych modeli z parametrami
 
 ## 🔄 Przepływ danych
 
@@ -413,21 +431,36 @@ docker-compose down
 ## 📊 Modele ML - Szczegóły
 
 ### ✅ ARIMA(1,1,1) - ZAIMPLEMENTOWANY
-- **Zastosowanie:** Prognozowanie stanów magazynowych krwi
+- **Zastosowanie:** Prognozowanie krótkoterminowe
 - **Parametry:** p=1, d=1, q=1
-- **Horyzont:** 1-7 dni (krótkoterminowy)
-- **Input:** Szereg czasowy stanów dla danej grupy krwi w danym RCKiK
-- **Output:**
-  - Prognoza wartości numerycznej
-  - Przedziały ufności (95%)
-  - Mapowanie na statusy (CRITICALLY_LOW, LOW, MEDIUM, SATISFACTORY, OPTIMAL)
 - **Minimalna liczba danych:** 10 punktów
-- **Obsługa braków:** Forward fill
+- **Horyzont:** 1-7 dni
+- **Output:** Prognoza + przedziały ufności (95%)
+- **Zalety:** Najszybszy, dobry dla stabilnych trendów
 
-### 🔄 Prophet - DO IMPLEMENTACJI
+### ✅ Prophet - ZAIMPLEMENTOWANY
 - **Zastosowanie:** Długoterminowe prognozy z sezonowością
-- **Uwzględnia:** Święta, weekendy, wzorce roczne
-- **Horyzont:** 1-4 tygodnie (średnioterminowy)
+- **Sezonowość:** Multiplicative (yearly, weekly)
+- **Minimalna liczba danych:** 14 punktów
+- **Horyzont:** 1-30 dni
+- **Output:** Prognoza + przedziały ufności (95%)
+- **Zalety:** Uwzględnia święta, weekendy, wzorce roczne
+
+### ✅ SARIMA(1,1,1)x(1,1,1,7) - ZAIMPLEMENTOWANY
+- **Zastosowanie:** Prognozy z wzorcami sezonowymi
+- **Sezonowość:** 7 dni (tygodniowa)
+- **Minimalna liczba danych:** 14 punktów
+- **Horyzont:** 1-14 dni
+- **Output:** Prognoza + przedziały ufności (95%)
+- **Zalety:** Wykrywa cykliczne wzorce tygodniowe
+
+### ✅ LSTM - ZAIMPLEMENTOWANY
+- **Zastosowanie:** Złożone wzorce nieliniowe
+- **Architektura:** 2-layer LSTM (50→25 units) + Dropout
+- **Minimalna liczba danych:** 27 punktów (lookback=7 + 20 training)
+- **Horyzont:** 1-7 dni
+- **Output:** Prognoza + szacowane przedziały (95%)
+- **Zalety:** Najdokładniejszy dla skomplikowanych wzorców
 
 ### System alertów (planowany):
 - **Poziom 1 (Info):** Spadek do stanu średniego w ciągu 7 dni
@@ -457,7 +490,7 @@ A+, A-, B+, B-, AB+, AB-, O+, O-
 |-----------|-------------|------|--------|-----|
 | Database | PostgreSQL + Liquibase | 5432 | ✅ | Przechowywanie danych |
 | Scraper | Spring Boot + Jsoup + Quartz | 8080 | ✅ | Web scraping RCKiK |
-| **ML Service** | **Python + Flask + ARIMA** | **5000** | **✅** | **Prognozy ML** |
+| **ML Service** | **Python + 4 modele ML** | **5000** | **✅** | **ARIMA, Prophet, SARIMA, LSTM** |
 | Backend | Spring Boot 3.4 + Java 21 | 8081 | ✅ | REST API + logika biznesowa |
 | Frontend | Astro + React + Tailwind | 4321 | 🔄 | UI/Dashboard |
 

@@ -10,9 +10,20 @@ import os
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from models.arima_forecaster import auto_arima_forecast
+from models.prophet_forecaster import prophet_forecast
+from models.sarima_forecaster import sarima_forecast
+from models.lstm_forecaster import lstm_forecast
 
 app = Flask(__name__)
 CORS(app)  # Enable CORS for backend communication
+
+# Model dispatcher
+MODEL_DISPATCHERS = {
+    'ARIMA': auto_arima_forecast,
+    'PROPHET': prophet_forecast,
+    'SARIMA': sarima_forecast,
+    'LSTM': lstm_forecast
+}
 
 
 @app.route('/health', methods=['GET'])
@@ -21,18 +32,18 @@ def health_check():
     return jsonify({
         'status': 'healthy',
         'service': 'ML Forecasting Service',
-        'version': '1.0.0'
+        'version': '2.0.0'
     }), 200
 
 
 @app.route('/api/forecast', methods=['POST'])
 def create_forecast():
     """
-    Create blood inventory forecast using ARIMA model
+    Create blood inventory forecast using selected ML model
 
     Request body:
     {
-        "modelType": "ARIMA",
+        "modelType": "ARIMA|PROPHET|SARIMA|LSTM",
         "bloodType": "A_PLUS",
         "forecastHorizonDays": 7,
         "historicalData": [
@@ -89,14 +100,17 @@ def create_forecast():
             }), 400
 
         # Validate model type
-        if model_type != 'ARIMA':
+        if model_type not in MODEL_DISPATCHERS:
             return jsonify({
                 'success': False,
-                'errorMessage': f'Unsupported model type: {model_type}. Currently only ARIMA is supported.'
+                'errorMessage': f'Unsupported model type: {model_type}. Supported: {", ".join(MODEL_DISPATCHERS.keys())}'
             }), 400
 
+        # Get the appropriate forecaster
+        forecast_func = MODEL_DISPATCHERS[model_type]
+
         # Generate forecast
-        result = auto_arima_forecast(historical_data, horizon_days)
+        result = forecast_func(historical_data, horizon_days)
 
         return jsonify(result), 200
 
@@ -121,12 +135,47 @@ def list_models():
             {
                 'type': 'ARIMA',
                 'name': 'AutoRegressive Integrated Moving Average',
-                'description': 'Classical time series forecasting model',
+                'description': 'Classical time series forecasting model for short-term predictions',
                 'parameters': {
                     'p': 1,
                     'd': 1,
                     'q': 1
                 },
+                'minDataPoints': 10,
+                'status': 'active'
+            },
+            {
+                'type': 'PROPHET',
+                'name': 'Facebook Prophet',
+                'description': 'Forecasting model with seasonality and holiday effects',
+                'parameters': {
+                    'seasonality_mode': 'multiplicative',
+                    'interval_width': 0.95
+                },
+                'minDataPoints': 14,
+                'status': 'active'
+            },
+            {
+                'type': 'SARIMA',
+                'name': 'Seasonal ARIMA',
+                'description': 'ARIMA with seasonal patterns (weekly)',
+                'parameters': {
+                    'order': '(1, 1, 1)',
+                    'seasonal_order': '(1, 1, 1, 7)'
+                },
+                'minDataPoints': 14,
+                'status': 'active'
+            },
+            {
+                'type': 'LSTM',
+                'name': 'Long Short-Term Memory',
+                'description': 'Deep learning model for complex pattern recognition',
+                'parameters': {
+                    'lookback': 7,
+                    'lstm_units': 50,
+                    'epochs': 50
+                },
+                'minDataPoints': 27,
                 'status': 'active'
             }
         ]
@@ -154,6 +203,7 @@ if __name__ == '__main__':
     debug = os.environ.get('DEBUG', 'False').lower() == 'true'
 
     print(f"Starting ML Forecasting Service on port {port}")
+    print(f"Supported models: {', '.join(MODEL_DISPATCHERS.keys())}")
     print(f"Debug mode: {debug}")
 
     app.run(host='0.0.0.0', port=port, debug=debug)
