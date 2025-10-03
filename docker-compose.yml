@@ -12,6 +12,7 @@ services:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+      - ./db/changelog:/docker-entrypoint-initdb.d
     networks:
       - mkrew-network
     healthcheck:
@@ -22,7 +23,7 @@ services:
 
   scraper:
     build:
-      context: .
+      context: ./scraper
       dockerfile: Dockerfile
     container_name: mkrew-scraper
     environment:
@@ -36,6 +37,29 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+    restart: unless-stopped
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: mkrew-backend
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/mkrew
+      SPRING_DATASOURCE_USERNAME: mkrew
+      SPRING_DATASOURCE_PASSWORD: mkrew123
+      JWT_SECRET: your-256-bit-secret-key-change-this-in-production-mkrew-blood-inventory-system
+      JWT_EXPIRATION: 86400000
+      SCRAPER_SERVICE_URL: http://scraper:8080
+    ports:
+      - "8081:8081"
+    networks:
+      - mkrew-network
+    depends_on:
+      postgres:
+        condition: service_healthy
+      scraper:
+        condition: service_started
     restart: unless-stopped
 
 networks:
