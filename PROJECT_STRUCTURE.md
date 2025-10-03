@@ -506,34 +506,50 @@ A+, A-, B+, B-, AB+, AB-, O+, O-
 
 1. **Migracje bazy danych:** Używamy Liquibase (NIE Flyway!), pliki YAML w `/db/changelog/changes/`
 2. **Struktura katalogów:** `/db` jest GŁÓWNYM miejscem dla bazy, NIE `backend/src/main/resources/db`
-3. **✅ ML Service jest GOTOWY:** Moduł `/ml` jest w pełni zaimplementowany z ARIMA
+3. **✅ ML Service KOMPLETNY:** Moduł `/ml` zaimplementowany ze WSZYSTKIMI 4 modelami:
+   - ✅ ARIMA - klasyczny model szeregów czasowych
+   - ✅ Prophet - model z sezonowością
+   - ✅ SARIMA - sezonowy ARIMA
+   - ✅ LSTM - deep learning
 4. **Testowe dane:** Admin user już utworzony w migracji 004
 5. **API prognozy:**
    - Backend: ✅ Zaimplementowany (`ForecastController`, `ForecastService`, `MLServiceClient`)
-   - ML Service: ✅ Zaimplementowany (`/api/forecast`, ARIMA model)
+   - ML Service: ✅ Zaimplementowany (`/api/forecast` wspiera 4 modele)
    - Frontend: 🔄 Do implementacji
 6. **Docker:** Wszystkie serwisy mają Dockerfile i są w docker-compose.yml
 7. **Komunikacja Backend-ML:**
    - Local: `http://localhost:5000`
    - Docker: `http://ml:5000`
+8. **⚠️ NAPRAWIONO:** Typo `getConfideLevel()` → `getConfidenceLevel()` w MLForecastResponse.java
 
 ## 🎯 Kolejne kroki (TODO)
 
 - [ ] Rozbudowa frontendu o wizualizacje prognoz
-- [ ] Implementacja modelu Prophet
 - [ ] System alertów i notyfikacji
 - [ ] Dashboard administratora
-- [ ] Metryki i monitoring prognoz
-- [ ] Automatyczna optymalizacja parametrów ARIMA
-- [ ] API do batch predictions
-- [ ] Jupyter notebooks do eksperymentowania
+- [ ] Metryki i monitoring dokładności prognoz
+- [ ] Automatyczna optymalizacja parametrów modeli (auto-ARIMA)
+- [ ] API do batch predictions (wiele prognoz naraz)
+- [ ] Jupyter notebooks do eksperymentów i analiz
+- [ ] Porównanie modeli (benchmark różnych algorytmów)
+- [ ] Cache dla prognoz (Redis)
+- [ ] Model persistence (zapisywanie wytrenowanych modeli)
 
 ---
 
-**Ostatnia aktualizacja:** 2025-10-03 23:30
+**Ostatnia aktualizacja:** 2025-10-04 00:15
 **Status projektu:**
-- ✅ Backend - GOTOWY (z API prognoz)
+- ✅ Backend - GOTOWY (z API prognoz, naprawiony typo)
 - ✅ Scraper - GOTOWY
-- ✅ ML Service - GOTOWY (ARIMA)
+- ✅ ML Service - KOMPLETNY (4 modele: ARIMA, Prophet, SARIMA, LSTM)
 - ✅ Database - GOTOWY (5 migracji)
 - 🔄 Frontend - W TRAKCIE ROZWOJU
+
+**Zmiany w ostatniej aktualizacji:**
+1. ✅ Naprawiono typo `getConfideLevel()` → `getConfidenceLevel()` w MLForecastResponse.java
+2. ✅ Dodano Prophet model (Facebook Prophet z sezonowością)
+3. ✅ Dodano SARIMA model (sezonowy ARIMA, wzorce tygodniowe)
+4. ✅ Dodano LSTM model (deep learning, TensorFlow)
+5. ✅ Zaktualizowano ML API do obsługi wszystkich 4 modeli
+6. ✅ Zaktualizowano requirements.txt (prophet, tensorflow)
+7. ✅ Zaktualizowano dokumentację PROJECT_STRUCTURE.md
