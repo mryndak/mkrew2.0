@@ -12,14 +12,14 @@ services:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
-      - ./db/changelog:/docker-entrypoint-initdb.d
     networks:
       - mkrew-network
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U mkrew"]
+      test: ["CMD-SHELL", "pg_isready -U mkrew -d mkrew"]
       interval: 10s
       timeout: 5s
       retries: 5
+      start_period: 30s
 
   scraper:
     build:
