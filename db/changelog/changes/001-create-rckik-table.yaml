@@ -1,0 +1,303 @@
+databaseChangeLog:
+  - changeSet:
+      id: 001-create-rckik-table
+      author: mkrew
+      changes:
+        - createTable:
+            tableName: rckik
+            columns:
+              - column:
+                  name: id
+                  type: BIGINT
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    primaryKeyName: pk_rckik
+              - column:
+                  name: code
+                  type: VARCHAR(50)
+                  constraints:
+                    nullable: false
+                    unique: true
+                    uniqueConstraintName: uk_rckik_code
+              - column:
+                  name: name
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: city
+                  type: VARCHAR(100)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: website_url
+                  type: VARCHAR(500)
+              - column:
+                  name: scraping_enabled
+                  type: BOOLEAN
+                  defaultValueBoolean: true
+                  constraints:
+                    nullable: false
+              - column:
+                  name: scraping_cron_expression
+                  type: VARCHAR(100)
+                  defaultValue: "0 0 8,14,20 * * ?"
+        - createIndex:
+            indexName: idx_rckik_code
+            tableName: rckik
+            columns:
+              - column:
+                  name: code
+        - insert:
+            tableName: rckik
+            columns:
+              - column:
+                  name: code
+                  value: BIALYSTOK
+              - column:
+                  name: name
+                  value: Regionalne Centrum Krwiodawstwa i Krwiolecznictwa w Białymstoku
+              - column:
+                  name: city
+                  value: Białystok
+        - insert:
+            tableName: rckik
+            columns:
+              - column:
+                  name: code
+                  value: BYDGOSZCZ
+              - column:
+                  name: name
+                  value: Regionalne Centrum Krwiodawstwa i Krwiolecznictwa w Bydgoszczy
+              - column:
+                  name: city
+                  value: Bydgoszcz
+        - insert:
+            tableName: rckik
+            columns:
+              - column:
+                  name: code
+                  value: GDANSK
+              - column:
+                  name: name
+                  value: Regionalne Centrum Krwiodawstwa i Krwiolecznictwa w Gdańsku
+              - column:
+                  name: city
+                  value: Gdańsk
+        - insert:
+            tableName: rckik
+            columns:
+              - column:
+                  name: code
+                  value: KALISZ
+              - column:
+                  name: name
+                  value: Regionalne Centrum Krwiodawstwa i Krwiolecznictwa w Kaliszu
+              - column:
+                  name: city
+                  value: Kalisz
+        - insert:
+            tableName: rckik
+            columns:
+              - column:
+                  name: code
+                  value: KATOWICE
+              - column:
+                  name: name
+                  value: Regionalne Centrum Krwiodawstwa i Krwiolecznictwa w Katowicach
+              - column:
+                  name: city
+                  value: Katowice
+        - insert:
+            tableName: rckik
+            columns:
+              - column:
+                  name: code
+                  value: KIELCE
+              - column:
+                  name: name
+                  value: Regionalne Centrum Krwiodawstwa i Krwiolecznictwa w Kielcach
+              - column:
+                  name: city
+                  value: Kielce
+        - insert:
+            tableName: rckik
+            columns:
+              - column:
+                  name: code
+                  value: KRAKOW
+              - column:
+                  name: name
+                  value: Regionalne Centrum Krwiodawstwa i Krwiolecznictwa w Krakowie
+              - column:
+                  name: city
+                  value: Kraków
+        - insert:
+            tableName: rckik
+            columns:
+              - column:
+                  name: code
+                  value: LUBLIN
+              - column:
+                  name: name
+                  value: Regionalne Centrum Krwiodawstwa i Krwiolecznictwa w Lublinie
+              - column:
+                  name: city
+                  value: Lublin
+        - insert:
+            tableName: rckik
+            columns:
+              - column:
+                  name: code
+                  value: LODZ
+              - column:
+                  name: name
+                  value: Regionalne Centrum Krwiodawstwa i Krwiolecznictwa w Łodzi
+              - column:
+                  name: city
+                  value: Łódź
+        - insert:
+            tableName: rckik
+            columns:
+              - column:
+                  name: code
+                  value: OLSZTYN
+              - column:
+                  name: name
+                  value: Regionalne Centrum Krwiodawstwa i Krwiolecznictwa w Olsztynie
+              - column:
+                  name: city
+                  value: Olsztyn
+        - insert:
+            tableName: rckik
+            columns:
+              - column:
+                  name: code
+                  value: OPOLE
+              - column:
+                  name: name
+                  value: Regionalne Centrum Krwiodawstwa i Krwiolecznictwa w Opolu
+              - column:
+                  name: city
+                  value: Opole
+        - insert:
+            tableName: rckik
+            columns:
+              - column:
+                  name: code
+                  value: POZNAN
+              - column:
+                  name: name
+                  value: Regionalne Centrum Krwiodawstwa i Krwiolecznictwa w Poznaniu
+              - column:
+                  name: city
+                  value: Poznań
+        - insert:
+            tableName: rckik
+            columns:
+              - column:
+                  name: code
+                  value: RACIBORZ
+              - column:
+                  name: name
+                  value: Regionalne Centrum Krwiodawstwa i Krwiolecznictwa w Raciborzu
+              - column:
+                  name: city
+                  value: Racibórz
+        - insert:
+            tableName: rckik
+            columns:
+              - column:
+                  name: code
+                  value: RADOM
+              - column:
+                  name: name
+                  value: Regionalne Centrum Krwiodawstwa i Krwiolecznictwa w Radomiu
+              - column:
+                  name: city
+                  value: Radom
+        - insert:
+            tableName: rckik
+            columns:
+              - column:
+                  name: code
+                  value: RZESZOW
+              - column:
+                  name: name
+                  value: Regionalne Centrum Krwiodawstwa i Krwiolecznictwa w Rzeszowie
+              - column:
+                  name: city
+                  value: Rzeszów
+        - insert:
+            tableName: rckik
+            columns:
+              - column:
+                  name: code
+                  value: SLUPSK
+              - column:
+                  name: name
+                  value: Regionalne Centrum Krwiodawstwa i Krwiolecznictwa w Słupsku
+              - column:
+                  name: city
+                  value: Słupsk
+        - insert:
+            tableName: rckik
+            columns:
+              - column:
+                  name: code
+                  value: SZCZECIN
+              - column:
+                  name: name
+                  value: Regionalne Centrum Krwiodawstwa i Krwiolecznictwa w Szczecinie
+              - column:
+                  name: city
+                  value: Szczecin
+        - insert:
+            tableName: rckik
+            columns:
+              - column:
+                  name: code
+                  value: WALBRZYCH
+              - column:
+                  name: name
+                  value: Regionalne Centrum Krwiodawstwa i Krwiolecznictwa w Wałbrzychu
+              - column:
+                  name: city
+                  value: Wałbrzych
+        - insert:
+            tableName: rckik
+            columns:
+              - column:
+                  name: code
+                  value: WARSZAWA
+              - column:
+                  name: name
+                  value: Regionalne Centrum Krwiodawstwa i Krwiolecznictwa w Warszawie
+              - column:
+                  name: city
+                  value: Warszawa
+        - insert:
+            tableName: rckik
+            columns:
+              - column:
+                  name: code
+                  value: WROCLAW
+              - column:
+                  name: name
+                  value: Regionalne Centrum Krwiodawstwa i Krwiolecznictwa we Wrocławiu
+              - column:
+                  name: city
+                  value: Wrocław
+        - insert:
+            tableName: rckik
+            columns:
+              - column:
+                  name: code
+                  value: ZIELONA_GORA
+              - column:
+                  name: name
+                  value: Regionalne Centrum Krwiodawstwa i Krwiolecznictwa w Zielonej Górze
+              - column:
+                  name: city
+                  value: Zielona Góra

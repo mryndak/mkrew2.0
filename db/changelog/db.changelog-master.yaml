@@ -1,0 +1,7 @@
+databaseChangeLog:
+  - include:
+      file: db/changelog/changes/001-create-rckik-table.yaml
+  - include:
+      file: db/changelog/changes/002-create-blood-inventory-record-table.yaml
+  - include:
+      file: db/changelog/changes/003-create-scraping-log-table.yaml
