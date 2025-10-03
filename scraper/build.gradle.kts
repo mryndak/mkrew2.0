@@ -29,7 +29,6 @@ dependencies {
 	implementation(libs.spring.boot.starter.data.jpa)
 	implementation(libs.spring.boot.starter.quartz)
 	implementation(libs.jsoup)
-	implementation(libs.liquibase.core)
 	runtimeOnly(libs.postgresql)
 	testImplementation(libs.spring.boot.starter.test)
 	testRuntimeOnly(libs.junit.platform.launcher)
