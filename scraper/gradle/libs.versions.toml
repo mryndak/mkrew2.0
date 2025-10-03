@@ -1,0 +1,20 @@
+[versions]
+springBoot = "3.4.1"
+springDependencyManagement = "1.1.7"
+jsoup = "1.18.1"
+axion = "1.18.15"
+liquibase = "4.30.0"
+
+[libraries]
+spring-boot-starter-data-jpa = { module = "org.springframework.boot:spring-boot-starter-data-jpa" }
+spring-boot-starter-quartz = { module = "org.springframework.boot:spring-boot-starter-quartz" }
+spring-boot-starter-test = { module = "org.springframework.boot:spring-boot-starter-test" }
+jsoup = { module = "org.jsoup:jsoup", version.ref = "jsoup" }
+postgresql = { module = "org.postgresql:postgresql" }
+liquibase-core = { module = "org.liquibase:liquibase-core", version.ref = "liquibase" }
+junit-platform-launcher = { module = "org.junit.platform:junit-platform-launcher" }
+
+[plugins]
+spring-boot = { id = "org.springframework.boot", version.ref = "springBoot" }
+spring-dependency-management = { id = "io.spring.dependency-management", version.ref = "springDependencyManagement" }
+axion-release = { id = "pl.allegro.tech.build.axion-release", version.ref = "axion" }
