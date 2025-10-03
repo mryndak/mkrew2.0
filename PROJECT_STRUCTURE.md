@@ -9,7 +9,7 @@
 - ✅ Przechowywanie historycznych danych o 8 grupach krwi (A+, A-, B+, B-, AB+, AB-, O+, O-)
 - ✅ Prognozowanie niedoborów krwi przy użyciu modeli ML (ARIMA, Prophet)
 - ✅ System wczesnego ostrzegania o potencjalnych niedoborach
-- ✅ Dashboard z wizualizacjami i prognozami
+- 🔄 Dashboard z wizualizacjami i prognozami (w trakcie)
 
 ## 🏗️ Architektura projektu
 
@@ -19,7 +19,7 @@ mkrew2/
 ├── /backend            # REST API (Spring Boot)
 ├── /scraper            # Serwis scrapujący dane RCKiK
 ├── /frontend           # Aplikacja webowa (Astro)
-└── /ml                 # Modele uczenia maszynowego (planowany)
+└── /ml                 # ✅ Modele uczenia maszynowego (ZAIMPLEMENTOWANY!)
 ```
 
 ## 📁 Szczegółowa struktura katalogów
@@ -36,7 +36,7 @@ db/
 │       ├── 002-create-blood-inventory-record-table.yaml
 │       ├── 003-create-scraping-log-table.yaml
 │       ├── 004-create-users-table.yaml
-│       └── 005-create-forecast-tables.yaml
+│       └── 005-create-forecast-tables.yaml    # ✅ Nowa migracja dla prognoz
 └── erd-diagram.drawio
 ```
 
@@ -59,13 +59,43 @@ backend/
 ├── src/main/java/pl/mkrew/backend/
 │   ├── domain/
 │   │   ├── entity/          # JPA entities
-│   │   └── enums/           # BloodType, InventoryStatus, UserRole, ForecastModelType
+│   │   │   ├── User.java
+│   │   │   ├── RCKiK.java
+│   │   │   ├── BloodInventoryRecord.java
+│   │   │   ├── ForecastModel.java          # ✅ Nowa encja
+│   │   │   ├── ForecastRequest.java        # ✅ Nowa encja
+│   │   │   └── ForecastResult.java         # ✅ Nowa encja
+│   │   └── enums/
+│   │       ├── BloodType.java
+│   │       ├── InventoryStatus.java
+│   │       ├── UserRole.java
+│   │       ├── ForecastModelType.java      # ✅ Nowy enum
+│   │       └── ForecastStatus.java         # ✅ Nowy enum
 │   ├── repository/          # Spring Data JPA repositories
-│   ├── service/             # Business logic + ML service client
-│   ├── controller/          # REST endpoints
+│   │   ├── ForecastModelRepository.java    # ✅ Nowe repo
+│   │   ├── ForecastRequestRepository.java  # ✅ Nowe repo
+│   │   └── ForecastResultRepository.java   # ✅ Nowe repo
+│   ├── service/
+│   │   ├── AuthService.java
+│   │   ├── BloodInventoryService.java
+│   │   ├── ScraperClientService.java
+│   │   ├── ForecastService.java            # ✅ Nowy serwis
+│   │   └── MLServiceClient.java            # ✅ Klient ML
+│   ├── controller/
+│   │   ├── AuthController.java
+│   │   ├── BloodInventoryController.java
+│   │   ├── AdminController.java
+│   │   └── ForecastController.java         # ✅ Nowy kontroler
 │   ├── security/            # JWT + Spring Security
 │   ├── dto/                 # Data Transfer Objects
-│   └── config/              # Configuration classes
+│   │   ├── ForecastRequestDto.java         # ✅ Nowe DTO
+│   │   ├── ForecastResponseDto.java        # ✅ Nowe DTO
+│   │   ├── ForecastResultDto.java          # ✅ Nowe DTO
+│   │   ├── MLForecastRequest.java          # ✅ Nowe DTO
+│   │   └── MLForecastResponse.java         # ✅ Nowe DTO
+│   └── config/
+│       ├── SecurityConfig.java
+│       └── RestTemplateConfig.java         # ✅ Nowa konfiguracja
 └── build.gradle.kts
 ```
 
@@ -83,8 +113,10 @@ backend/
 - `POST /api/auth/login` - Logowanie (public)
 - `GET /api/blood-inventory/**` - Dane o krwi (USER_DATA, ADMIN)
 - `POST /api/admin/scraper/trigger` - Trigger scrapingu (ADMIN)
-- `POST /api/forecast/create` - Uruchom prognozę (ADMIN)
-- `GET /api/forecast/{id}` - Pobierz prognozę (ADMIN)
+- **✅ `POST /api/forecast/create`** - Uruchom prognozę (ADMIN)
+- **✅ `GET /api/forecast/{id}`** - Pobierz prognozę (ADMIN)
+- **✅ `GET /api/forecast/all`** - Wszystkie prognozy (ADMIN)
+- **✅ `GET /api/forecast/rckik/{rckikId}`** - Prognozy dla RCKiK (ADMIN)
 
 **Użytkownicy domyślni:**
 - Admin: `admin` / `admin123` (rola: ADMIN)
@@ -97,6 +129,7 @@ scraper/
 │   ├── domain/entity/       # JPA entities (RCKiK, BloodInventoryRecord, ScrapingLog)
 │   ├── scraper/
 │   │   ├── strategy/        # Strategie scrapingu dla różnych RCKiK
+│   │   │   ├── RCKiKScraperStrategy.java (interface)
 │   │   │   ├── RzeszowScraperStrategy.java
 │   │   │   ├── KrakowScraperStrategy.java
 │   │   │   └── WroclawScraperStrategy.java
@@ -108,8 +141,9 @@ scraper/
 ```
 
 **Technologia:**
-- Spring Boot
+- Spring Boot 3.4.1
 - Java 21
+- Gradle
 - Jsoup (web scraping)
 - Quartz Scheduler
 - PostgreSQL
@@ -131,11 +165,18 @@ scraper/
 frontend/
 ├── src/
 │   ├── components/          # React/Astro components
+│   │   └── Welcome.astro
 │   ├── layouts/             # Layout templates
+│   │   └── Layout.astro
 │   ├── pages/               # Astro pages (routing)
+│   │   └── index.astro
 │   └── styles/              # CSS/Tailwind
+│       └── global.css
 ├── public/                  # Static assets
-└── package.json
+├── package.json
+├── astro.config.mjs
+├── tailwind.config.mjs
+└── Dockerfile
 ```
 
 **Technologia:**
@@ -144,7 +185,7 @@ frontend/
 - Tailwind CSS
 - TypeScript
 
-**Port:** (do ustalenia)
+**Port:** 4321
 
 **Planowane funkcje:**
 - Dashboard z mapą Polski i stanami RCKiK
@@ -153,39 +194,56 @@ frontend/
 - System alertów o niedoborach
 - Panel administratora
 
-### 📂 `/ml` - Machine Learning (planowany)
+### 📂 `/ml` - Machine Learning ✅ ZAIMPLEMENTOWANY!
 ```
 ml/
-├── models/                  # Wytrenowane modele
-├── notebooks/               # Jupyter notebooks (eksperymentowanie)
 ├── src/
+│   ├── api/                 # ✅ Flask REST API
+│   │   ├── __init__.py
+│   │   └── app.py           # ✅ Główna aplikacja Flask
+│   ├── models/              # ✅ Modele ML
+│   │   ├── __init__.py
+│   │   └── arima_forecaster.py  # ✅ Model ARIMA
 │   ├── preprocessing/       # Przygotowanie danych
-│   ├── training/            # Trenowanie modeli
-│   └── api/                 # REST API dla prognoz
-├── requirements.txt
-└── Dockerfile
+│   │   └── __init__.py
+│   └── __init__.py
+├── tests/                   # Testy jednostkowe
+│   └── __init__.py
+├── requirements.txt         # ✅ Zależności Python
+├── Dockerfile              # ✅ Kontener Docker
+├── .env.example            # ✅ Przykładowa konfiguracja
+├── .gitignore
+└── README.md               # ✅ Dokumentacja
 ```
 
-**Technologia (planowana):**
-- Python 3.10+
-- Flask/FastAPI (REST API)
-- statsmodels (ARIMA)
-- Prophet (Facebook)
-- scikit-learn
-- pandas, numpy
+**Technologia:**
+- Python 3.11
+- Flask 3.0.0 (REST API)
+- statsmodels 0.14.1 (ARIMA)
+- pandas, numpy (przetwarzanie danych)
+- scikit-learn (ML utilities)
+- gunicorn (production server)
 
 **Port:** 5000
 
-**Modele do implementacji:**
-1. **ARIMA** - AutoRegressive Integrated Moving Average (priorytet 1)
-2. **Prophet** - Facebook's forecasting tool (priorytet 2)
-3. **SARIMA** - Seasonal ARIMA (przyszłość)
-4. **LSTM** - Deep learning (przyszłość)
+**Zaimplementowane modele:**
+1. ✅ **ARIMA(1,1,1)** - AutoRegressive Integrated Moving Average
+   - Parametry: p=1, d=1, q=1
+   - Horyzont: 1-7 dni
+   - Confidence intervals: 95%
+   - Automatyczne mapowanie statusów
 
-**API endpoints (planowane):**
-- `POST /api/forecast` - Utwórz prognozę
-  - Input: dane historyczne + parametry modelu
+**API endpoints:**
+- ✅ `GET /health` - Health check
+- ✅ `POST /api/forecast` - Generowanie prognozy
+  - Input: historyczne dane + parametry modelu
   - Output: prognozy z interwałami ufności
+- ✅ `GET /api/models` - Lista dostępnych modeli
+
+**Modele do implementacji w przyszłości:**
+- 🔄 **Prophet** - Facebook's forecasting tool
+- 🔄 **SARIMA** - Seasonal ARIMA
+- 🔄 **LSTM** - Deep learning
 
 ## 🔄 Przepływ danych
 
@@ -204,27 +262,27 @@ ml/
                                  ▼           │
 ┌──────────┐     REST      ┌──────────┐     │
 │ FRONTEND │ ◄──────────►  │ BACKEND  │─────┘
-│  Astro   │               │  :8081   │
+│  :4321   │               │  :8081   │
 └──────────┘               └─────┬────┘
                                  │ REST
                                  ▼
                            ┌──────────┐
-                           │    ML    │
+                           │    ML    │  ✅ DZIAŁA!
                            │  :5000   │
                            └──────────┘
 ```
 
-### Szczegółowy flow:
-1. **Scraper** → Pobiera dane ze stron RCKiK (codziennie 8:00, 14:00, 20:00)
-2. **Scraper** → Zapisuje do `blood_inventory_record` w PostgreSQL
-3. **Backend** → Udostępnia dane przez REST API
-4. **Frontend** → Wyświetla dane użytkownikowi
-5. **Admin** → Wywołuje prognozę przez `/api/forecast/create`
-6. **Backend** → Pobiera dane historyczne z bazy
-7. **Backend** → Wysyła request do ML service
-8. **ML Service** → Generuje prognozę (ARIMA/Prophet)
-9. **Backend** → Zapisuje wyniki do `forecast_result`
-10. **Frontend** → Wyświetla prognozy
+### Szczegółowy flow prognozy:
+1. **Admin** → Wywołuje prognozę przez `POST /api/forecast/create` (Backend)
+2. **Backend** → Pobiera dane historyczne z `blood_inventory_record`
+3. **Backend** → Przygotowuje request dla ML (`MLForecastRequest`)
+4. **Backend** → Wysyła `POST http://ml:5000/api/forecast`
+5. **ML Service** → Przetwarza dane, trenuje model ARIMA
+6. **ML Service** → Generuje prognozę na N dni z przedziałami ufności
+7. **ML Service** → Zwraca `MLForecastResponse`
+8. **Backend** → Zapisuje wyniki do `forecast_result`
+9. **Backend** → Zwraca `ForecastResponseDto` do klienta
+10. **Frontend** → Wyświetla prognozy użytkownikowi
 
 ## 🔐 Bezpieczeństwo
 
@@ -251,7 +309,7 @@ server.port=8081
 spring.datasource.url=jdbc:postgresql://localhost:5432/mkrew
 jwt.secret=your-256-bit-secret-key-change-this-in-production
 scraper.service.url=http://localhost:8080
-ml.service.url=http://localhost:5000
+ml.service.url=http://localhost:5000              # ✅ Nowa konfiguracja
 ```
 
 ### Scraper (`application.properties`):
@@ -260,14 +318,32 @@ server.port=8080
 spring.datasource.url=jdbc:postgresql://localhost:5432/mkrew
 ```
 
+### ML Service (`.env`):
+```env
+PORT=5000
+DEBUG=False
+FLASK_ENV=production
+DEFAULT_ARIMA_P=1
+DEFAULT_ARIMA_D=1
+DEFAULT_ARIMA_Q=1
+CONFIDENCE_LEVEL=0.95
+```
+
 ### Docker Compose:
 ```yaml
 services:
-  - postgres:5432 (baza danych)
-  - backend:8081 (API)
-  - scraper:8080 (scraping service)
-  - frontend (do skonfigurowania)
+  - postgres:5432        # Baza danych
+  - scraper:8080         # Scraping service
+  - ml:5000             # ✅ ML forecasting service
+  - backend:8081        # REST API
+  - frontend:4321       # Astro frontend
 ```
+
+**Kolejność uruchamiania:**
+1. postgres (healthcheck)
+2. scraper + ml (równolegle)
+3. backend (czeka na postgres + scraper + ml)
+4. frontend (czeka na backend)
 
 ## 🚀 Uruchomienie projektu
 
@@ -275,27 +351,80 @@ services:
 - Java 21
 - PostgreSQL 15+
 - Gradle 8+
-- Node.js 18+ (dla frontendu)
-- Python 3.10+ (dla ML, w przyszłości)
+- Python 3.11+
+- Node.js 18+
+- Docker + Docker Compose (opcjonalnie)
 
-### Kroki:
-1. Uruchom PostgreSQL
-2. Uruchom migracje Liquibase (automatycznie przy starcie backendu/scrapera)
-3. Uruchom scraper: `cd scraper && ./gradlew bootRun`
-4. Uruchom backend: `cd backend && ./gradlew bootRun`
-5. Uruchom frontend: `cd frontend && npm run dev`
-6. (Przyszłość) Uruchom ML service: `cd ml && python app.py`
+### Uruchomienie lokalne:
+
+#### 1. Baza danych:
+```bash
+# PostgreSQL musi działać na localhost:5432
+# Utworzy się automatycznie przez migracje Liquibase
+```
+
+#### 2. ML Service:
+```bash
+cd ml
+python -m venv venv
+venv\Scripts\activate  # Windows
+pip install -r requirements.txt
+python src/api/app.py
+# Działa na http://localhost:5000
+```
+
+#### 3. Scraper:
+```bash
+cd scraper
+./gradlew bootRun
+# Działa na http://localhost:8080
+```
+
+#### 4. Backend:
+```bash
+cd backend
+./gradlew bootRun
+# Działa na http://localhost:8081
+```
+
+#### 5. Frontend:
+```bash
+cd frontend
+npm install
+npm run dev
+# Działa na http://localhost:4321
+```
+
+### Uruchomienie z Docker Compose:
+```bash
+# Wszystkie serwisy naraz
+docker-compose up -d
+
+# Build i uruchom
+docker-compose up -d --build
+
+# Sprawdź logi
+docker-compose logs -f
+
+# Zatrzymaj
+docker-compose down
+```
 
 ## 📊 Modele ML - Szczegóły
 
-### ARIMA (priorytet 1):
+### ✅ ARIMA(1,1,1) - ZAIMPLEMENTOWANY
 - **Zastosowanie:** Prognozowanie stanów magazynowych krwi
-- **Parametry:** p, d, q (zapisane w `forecast_model.model_parameters`)
+- **Parametry:** p=1, d=1, q=1
 - **Horyzont:** 1-7 dni (krótkoterminowy)
 - **Input:** Szereg czasowy stanów dla danej grupy krwi w danym RCKiK
-- **Output:** Prognoza + przedziały ufności
+- **Output:**
+  - Prognoza wartości numerycznej
+  - Przedziały ufności (95%)
+  - Mapowanie na statusy (CRITICALLY_LOW, LOW, MEDIUM, SATISFACTORY, OPTIMAL)
+- **Minimalna liczba danych:** 10 punktów
+- **Obsługa braków:** Forward fill
 
-### Prophet (priorytet 2):
+### 🔄 Prophet - DO IMPLEMENTACJI
 - **Zastosowanie:** Długoterminowe prognozy z sezonowością
 - **Uwzględnia:** Święta, weekendy, wzorce roczne
 - **Horyzont:** 1-4 tygodnie (średnioterminowy)
@@ -314,38 +443,64 @@ Białystok, Bydgoszcz, Gdańsk, Kalisz, Katowice, Kielce, Kraków, Lublin, Łód
 A+, A-, B+, B-, AB+, AB-, O+, O-
 
 ### Kodowanie stanów magazynowych:
-- `CRITICALLY_LOW` = Stan krytycznie niski
-- `LOW` = Stan niski
-- `MEDIUM` = Stan średni
-- `SATISFACTORY` = Stan zadowalający
-- `OPTIMAL` = Stan optymalny
+| Status | Numeric | Range |
+|--------|---------|-------|
+| CRITICALLY_LOW | 1 | < 1.5 |
+| LOW | 2 | 1.5 - 2.5 |
+| MEDIUM | 3 | 2.5 - 3.5 |
+| SATISFACTORY | 4 | 3.5 - 4.5 |
+| OPTIMAL | 5 | > 4.5 |
 
 ## 🔧 Technologie - Podsumowanie
 
-| Komponent | Technologia | Port | Cel |
-|-----------|-------------|------|-----|
-| Database | PostgreSQL + Liquibase | 5432 | Przechowywanie danych |
-| Backend | Spring Boot 3.4 + Java 21 | 8081 | REST API + logika biznesowa |
-| Scraper | Spring Boot + Jsoup + Quartz | 8080 | Web scraping RCKiK |
-| Frontend | Astro + React + Tailwind | TBD | UI/Dashboard |
-| ML Service | Python + Flask/FastAPI + Prophet/ARIMA | 5000 | Prognozy ML |
+| Komponent | Technologia | Port | Status | Cel |
+|-----------|-------------|------|--------|-----|
+| Database | PostgreSQL + Liquibase | 5432 | ✅ | Przechowywanie danych |
+| Scraper | Spring Boot + Jsoup + Quartz | 8080 | ✅ | Web scraping RCKiK |
+| **ML Service** | **Python + Flask + ARIMA** | **5000** | **✅** | **Prognozy ML** |
+| Backend | Spring Boot 3.4 + Java 21 | 8081 | ✅ | REST API + logika biznesowa |
+| Frontend | Astro + React + Tailwind | 4321 | 🔄 | UI/Dashboard |
 
 ## 📚 Dokumentacja dodatkowa
 
 - `metodologia.md` - Pełna metodologia badawcza projektu
 - `db/erd-diagram.drawio` - Diagram ERD bazy danych
-- `backend/ARCHITECTURE.md` - Architektura backendu (jeśli istnieje)
+- `backend/ARCHITECTURE.md` - Architektura backendu
 - `backend/IMPLEMENTATION_GUIDE.md` - Przewodnik implementacji
+- `ml/README.md` - ✅ Dokumentacja ML service
 
 ## ⚠️ Ważne uwagi dla AI/Asystentów
 
 1. **Migracje bazy danych:** Używamy Liquibase (NIE Flyway!), pliki YAML w `/db/changelog/changes/`
 2. **Struktura katalogów:** `/db` jest GŁÓWNYM miejscem dla bazy, NIE `backend/src/main/resources/db`
-3. **Projekt jest w trakcie rozwoju:** Moduł `/ml` nie istnieje jeszcze
+3. **✅ ML Service jest GOTOWY:** Moduł `/ml` jest w pełni zaimplementowany z ARIMA
 4. **Testowe dane:** Admin user już utworzony w migracji 004
-5. **API prognozy:** Backend gotowy, czeka na implementację ML service w Pythonie
+5. **API prognozy:**
+   - Backend: ✅ Zaimplementowany (`ForecastController`, `ForecastService`, `MLServiceClient`)
+   - ML Service: ✅ Zaimplementowany (`/api/forecast`, ARIMA model)
+   - Frontend: 🔄 Do implementacji
+6. **Docker:** Wszystkie serwisy mają Dockerfile i są w docker-compose.yml
+7. **Komunikacja Backend-ML:**
+   - Local: `http://localhost:5000`
+   - Docker: `http://ml:5000`
+
+## 🎯 Kolejne kroki (TODO)
+
+- [ ] Rozbudowa frontendu o wizualizacje prognoz
+- [ ] Implementacja modelu Prophet
+- [ ] System alertów i notyfikacji
+- [ ] Dashboard administratora
+- [ ] Metryki i monitoring prognoz
+- [ ] Automatyczna optymalizacja parametrów ARIMA
+- [ ] API do batch predictions
+- [ ] Jupyter notebooks do eksperymentowania
 
 ---
 
-**Ostatnia aktualizacja:** 2025-10-03
-**Status projektu:** Backend + Scraper działają, Frontend + ML w trakcie rozwoju
+**Ostatnia aktualizacja:** 2025-10-03 23:30
+**Status projektu:**
+- ✅ Backend - GOTOWY (z API prognoz)
+- ✅ Scraper - GOTOWY
+- ✅ ML Service - GOTOWY (ARIMA)
+- ✅ Database - GOTOWY (5 migracji)
+- 🔄 Frontend - W TRAKCIE ROZWOJU
