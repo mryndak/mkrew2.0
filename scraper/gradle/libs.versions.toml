@@ -8,6 +8,7 @@ liquibase = "4.30.0"
 [libraries]
 spring-boot-starter-data-jpa = { module = "org.springframework.boot:spring-boot-starter-data-jpa" }
 spring-boot-starter-quartz = { module = "org.springframework.boot:spring-boot-starter-quartz" }
+spring-boot-starter-web = { module = "org.springframework.boot:spring-boot-starter-web" }
 spring-boot-starter-test = { module = "org.springframework.boot:spring-boot-starter-test" }
 jsoup = { module = "org.jsoup:jsoup", version.ref = "jsoup" }
 postgresql = { module = "org.postgresql:postgresql" }
