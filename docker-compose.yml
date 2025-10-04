@@ -19,6 +19,26 @@ services:
       retries: 5
       start_period: 30s
 
+  liquibase:
+    build:
+      context: ./db
+      dockerfile: Dockerfile
+    container_name: mkrew-liquibase
+    environment:
+      LIQUIBASE_COMMAND_URL: jdbc:postgresql://postgres:5432/mkrew
+      LIQUIBASE_COMMAND_USERNAME: mkrew
+      LIQUIBASE_COMMAND_PASSWORD: mkrew123
+      LIQUIBASE_COMMAND_CHANGELOG_FILE: changelog/db.changelog-master.yaml
+    volumes:
+      - ./db/changelog/:/liquibase/changelog
+    networks:
+      - mkrew-network
+    depends_on:
+      postgres:
+        condition: service_healthy
+    command: ["update"]
+    restart: on-failure
+
   scraper:
     build:
       context: ./scraper
@@ -35,6 +55,8 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+      liquibase:
+        condition: service_completed_successfully
     restart: unless-stopped
 
   ml:
@@ -78,6 +100,8 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+      liquibase:
+        condition: service_completed_successfully
       scraper:
         condition: service_started
       ml:

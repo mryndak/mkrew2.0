@@ -126,7 +126,7 @@ public class ForecastService {
                         result.setPredictedQuantity(prediction.getPredictedQuantity());
                         result.setConfidenceLower(prediction.getConfidenceLower());
                         result.setConfidenceUpper(prediction.getConfidenceUpper());
-                        result.setConfidenceLevel(prediction.getConfideLevel());
+                        result.setConfidenceLevel(prediction.getConfidenceLevel());
                         return result;
                     })
                     .collect(Collectors.toList());
