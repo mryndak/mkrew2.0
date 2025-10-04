@@ -1,0 +1,70 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mkrew-frontend
+  labels:
+    app: mkrew-frontend
+    tier: frontend
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: mkrew-frontend
+  template:
+    metadata:
+      labels:
+        app: mkrew-frontend
+        tier: frontend
+    spec:
+      containers:
+      - name: frontend
+        image: gcr.io/PROJECT_ID/mkrew-frontend:latest
+        ports:
+        - containerPort: 4321
+          name: http
+        env:
+        - name: NODE_ENV
+          value: "production"
+        - name: HOST
+          value: "0.0.0.0"
+        - name: PORT
+          value: "4321"
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "100m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 4321
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 4321
+          initialDelaySeconds: 10
+          periodSeconds: 5
+          timeoutSeconds: 3
+          failureThreshold: 2
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mkrew-frontend-service
+  labels:
+    app: mkrew-frontend
+spec:
+  type: ClusterIP
+  ports:
+  - port: 80
+    targetPort: 4321
+    protocol: TCP
+    name: http
+  selector:
+    app: mkrew-frontend

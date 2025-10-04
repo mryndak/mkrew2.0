@@ -1,0 +1,102 @@
+# Google Cloud Build configuration for Frontend
+# Alternatywa dla GitHub Actions - build bezpośrednio w GCP
+
+steps:
+  # Build Docker image
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      - 'build'
+      - '--tag=gcr.io/$PROJECT_ID/mkrew-frontend:$SHORT_SHA'
+      - '--tag=gcr.io/$PROJECT_ID/mkrew-frontend:latest'
+      - './frontend'
+    id: 'build-image'
+
+  # Push to Google Container Registry
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      - 'push'
+      - 'gcr.io/$PROJECT_ID/mkrew-frontend:$SHORT_SHA'
+    id: 'push-image-sha'
+
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      - 'push'
+      - 'gcr.io/$PROJECT_ID/mkrew-frontend:latest'
+    id: 'push-image-latest'
+
+  # Deploy to GKE
+  - name: 'gcr.io/cloud-builders/kubectl'
+    args:
+      - 'apply'
+      - '-f'
+      - 'frontend/k8s/configmap.yaml'
+    env:
+      - 'CLOUDSDK_COMPUTE_REGION=europe-central2'
+      - 'CLOUDSDK_CONTAINER_CLUSTER=mkrew-cluster'
+    id: 'apply-configmap'
+
+  - name: 'gcr.io/cloud-builders/kubectl'
+    args:
+      - 'apply'
+      - '-f'
+      - 'frontend/k8s/deployment.yaml'
+    env:
+      - 'CLOUDSDK_COMPUTE_REGION=europe-central2'
+      - 'CLOUDSDK_CONTAINER_CLUSTER=mkrew-cluster'
+    id: 'apply-deployment'
+
+  - name: 'gcr.io/cloud-builders/kubectl'
+    args:
+      - 'apply'
+      - '-f'
+      - 'frontend/k8s/hpa.yaml'
+    env:
+      - 'CLOUDSDK_COMPUTE_REGION=europe-central2'
+      - 'CLOUDSDK_CONTAINER_CLUSTER=mkrew-cluster'
+    id: 'apply-hpa'
+
+  - name: 'gcr.io/cloud-builders/kubectl'
+    args:
+      - 'apply'
+      - '-f'
+      - 'frontend/k8s/ingress.yaml'
+    env:
+      - 'CLOUDSDK_COMPUTE_REGION=europe-central2'
+      - 'CLOUDSDK_CONTAINER_CLUSTER=mkrew-cluster'
+    id: 'apply-ingress'
+
+  # Update image in deployment
+  - name: 'gcr.io/cloud-builders/kubectl'
+    args:
+      - 'set'
+      - 'image'
+      - 'deployment/mkrew-frontend'
+      - 'frontend=gcr.io/$PROJECT_ID/mkrew-frontend:$SHORT_SHA'
+    env:
+      - 'CLOUDSDK_COMPUTE_REGION=europe-central2'
+      - 'CLOUDSDK_CONTAINER_CLUSTER=mkrew-cluster'
+    id: 'update-deployment-image'
+
+  # Wait for rollout
+  - name: 'gcr.io/cloud-builders/kubectl'
+    args:
+      - 'rollout'
+      - 'status'
+      - 'deployment/mkrew-frontend'
+    env:
+      - 'CLOUDSDK_COMPUTE_REGION=europe-central2'
+      - 'CLOUDSDK_CONTAINER_CLUSTER=mkrew-cluster'
+    id: 'rollout-status'
+
+# Store images in GCR
+images:
+  - 'gcr.io/$PROJECT_ID/mkrew-frontend:$SHORT_SHA'
+  - 'gcr.io/$PROJECT_ID/mkrew-frontend:latest'
+
+# Build timeout
+timeout: '1200s'
+
+# Options
+options:
+  machineType: 'N1_HIGHCPU_8'
+  logging: CLOUD_LOGGING_ONLY

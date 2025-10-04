@@ -1,0 +1,34 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: mkrew-frontend-ingress
+  annotations:
+    # GKE Ingress with HTTPS
+    kubernetes.io/ingress.class: "gce"
+    # Automatyczne przekierowanie HTTP -> HTTPS
+    kubernetes.io/ingress.allow-http: "true"
+    # SSL certificate (managed by Google)
+    networking.gke.io/managed-certificates: "mkrew-frontend-cert"
+    # Opcjonalnie: Cloud Armor dla DDoS protection
+    # cloud.google.com/armor-config: '{"your-security-policy": "global/securityPolicies/your-policy"}'
+spec:
+  rules:
+  - host: mkrew.pl
+    http:
+      paths:
+      - path: /*
+        pathType: ImplementationSpecific
+        backend:
+          service:
+            name: mkrew-frontend-service
+            port:
+              number: 80
+---
+# Managed SSL Certificate (Google-managed)
+apiVersion: networking.gke.io/v1
+kind: ManagedCertificate
+metadata:
+  name: mkrew-frontend-cert
+spec:
+  domains:
+    - mkrew.pl
