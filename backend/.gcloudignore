@@ -1,0 +1,17 @@
+# This file specifies files that are *not* uploaded to Google Cloud
+
+.gcloudignore
+.git
+.gitignore
+*.md
+!GCP_DEPLOYMENT.md
+terraform/
+scripts/
+*.tfstate
+*.tfstate.backup
+.terraform/
+build/
+.gradle/
+.idea/
+*.iml
+target/
