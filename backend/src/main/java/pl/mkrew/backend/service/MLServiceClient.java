@@ -3,6 +3,8 @@ package pl.mkrew.backend.service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -14,13 +16,25 @@ import pl.mkrew.backend.dto.MLForecastResponse;
 public class MLServiceClient {
 
     private static final Logger logger = LoggerFactory.getLogger(MLServiceClient.class);
+    private static final String API_KEY_HEADER = "X-API-Key";
 
     private final RestTemplate restTemplate;
     private final String mlServiceUrl;
+    private final String mlApiKey;
 
-    public MLServiceClient(RestTemplate restTemplate, @Value("${ml.service.url}") String mlServiceUrl) {
+    public MLServiceClient(RestTemplate restTemplate,
+                          @Value("${ml.service.url}") String mlServiceUrl,
+                          @Value("${ml.api.key}") String mlApiKey) {
         this.restTemplate = restTemplate;
         this.mlServiceUrl = mlServiceUrl;
+        this.mlApiKey = mlApiKey;
+    }
+
+    private <T> HttpEntity<T> createAuthenticatedRequest(T body) {
+        HttpHeaders headers = new HttpHeaders();
+        headers.set(API_KEY_HEADER, mlApiKey);
+        headers.set("Content-Type", "application/json");
+        return new HttpEntity<>(body, headers);
     }
 
     public MLForecastResponse requestForecast(MLForecastRequest request) {
@@ -30,7 +44,7 @@ public class MLServiceClient {
             String endpoint = mlServiceUrl + "/api/forecast";
             ResponseEntity<MLForecastResponse> response = restTemplate.postForEntity(
                 endpoint,
-                request,
+                createAuthenticatedRequest(request),
                 MLForecastResponse.class
             );
 

@@ -163,11 +163,13 @@ All 4 models are **fully implemented** in `/ml`:
 - `GET /api/forecast/all` - Get all forecasts (ADMIN)
 - `GET /api/forecast/rckik/{rckikId}` - Get forecasts for RCKiK (ADMIN)
 
-### ML Service (Port 5000)
+### ML Service (Port 5000) - 🔒 Secured with API Key
 
-- `GET /health` - Health check
-- `POST /api/forecast` - Generate forecast (supports all 4 models)
-- `GET /api/models` - List available models with parameters
+**⚠️ Important:** ML API is secured and only accessible with valid API key via `X-API-Key` header.
+
+- `GET /health` - Health check (public, no API key required)
+- `POST /api/forecast` - Generate forecast (requires API key, supports all 4 models)
+- `GET /api/models` - List available models with parameters (requires API key)
 
 ### Scraper (Port 8080) - 🔒 Secured with API Key
 
@@ -255,30 +257,64 @@ Services run in this order:
 
 ## Security
 
-### Scraper API Security
+Both **Scraper** and **ML Service** are secured with **two layers of protection**:
 
-The Scraper service is secured with **two layers of protection**:
+### 1. API Key Authentication (Application Layer)
 
-1. **API Key Authentication** (Application Layer)
-   - All scraper endpoints (except `/health`) require `X-API-Key` header
-   - Filter: `ApiKeyFilter.java` validates the API key
-   - Configuration: `scraper.api.key` property (environment variable: `SCRAPER_API_KEY`)
-   - Backend automatically includes API key in all requests to scraper
+**Scraper Service:**
+- All endpoints (except `/health`) require `X-API-Key` header
+- Filter: `ApiKeyFilter.java` validates the API key
+- Configuration: `scraper.api.key` property (environment variable: `SCRAPER_API_KEY`)
+- Backend automatically includes API key in all requests
 
-2. **Network Isolation** (Infrastructure Layer - Docker only)
-   - Scraper port (8080) is NOT exposed to host machine in Docker
-   - Only accessible within `mkrew-network` Docker network
-   - Backend communicates with scraper via internal Docker DNS: `http://scraper:8080`
-   - External requests cannot reach scraper directly
+**ML Service:**
+- All endpoints (except `/health`) require `X-API-Key` header
+- Middleware: `auth_middleware.py` with `@require_api_key` decorator
+- Configuration: `ML_API_KEY` environment variable
+- Backend automatically includes API key in all requests
 
-**Configuration:**
-- Set `SCRAPER_API_KEY` environment variable or use default value
-- Default: `change-this-secure-api-key-in-production-mkrew-scraper-2024`
-- ⚠️ **Important:** Change the API key in production!
+### 2. Network Isolation (Infrastructure Layer - Docker only)
 
-**Local Development:**
-- Scraper is accessible at `http://localhost:8080` (port exposed)
-- Still requires API key for all requests (except `/health`)
+**Scraper Service:**
+- Port 8080 is NOT exposed to host machine in Docker (`expose` instead of `ports`)
+- Only accessible within `mkrew-network` Docker network
+- Backend communicates via internal DNS: `http://scraper:8080`
+- External requests cannot reach scraper directly
+
+**ML Service:**
+- Port 5000 is NOT exposed to host machine in Docker (`expose` instead of `ports`)
+- Only accessible within `mkrew-network` Docker network
+- Backend communicates via internal DNS: `http://ml:5000`
+- External requests cannot reach ML service directly
+
+### Configuration
+
+**Environment Variables:**
+- `SCRAPER_API_KEY` - API key for Scraper service
+- `ML_API_KEY` - API key for ML service
+
+**Default Values:**
+- Scraper: `change-this-secure-api-key-in-production-mkrew-scraper-2024`
+- ML: `change-this-secure-api-key-in-production-mkrew-ml-2024`
+
+⚠️ **Important:** Change both API keys in production!
+
+**Configuration Files:**
+- `.env.example` - Example environment variables
+- `backend/src/main/resources/application.properties` - Backend configuration
+- `scraper/src/main/resources/application.properties` - Scraper configuration
+- `ml/.env.example` - ML service configuration
+
+### Local Development
+
+**Without Docker:**
+- Scraper accessible at `http://localhost:8080` (port exposed)
+- ML accessible at `http://localhost:5000` (port exposed)
+- Both still require API key for protected endpoints
+
+**With Docker:**
+- Scraper and ML ports NOT exposed to host
+- Only backend can access them via internal Docker network
 
 ## Important Notes for Development
 
@@ -288,9 +324,10 @@ The Scraper service is secured with **two layers of protection**:
 4. **Backend-ML Communication:**
    - Local: `http://localhost:5000`
    - Docker: `http://ml:5000`
-5. **Scraper Security:**
-   - API Key required for all endpoints except `/health`
-   - In Docker: network isolation (port not exposed to host)
+5. **Scraper & ML Security:**
+   - Both services require API Key for all endpoints except `/health`
+   - In Docker: network isolation (ports not exposed to host)
+   - Backend has API keys configured and sends them automatically
 6. **Build Tool:** Gradle (Kotlin DSL) for Java services
 7. **Java Version:** 21 (required)
 8. **Python Version:** 3.11+ (required for ML service)

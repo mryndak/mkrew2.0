@@ -13,6 +13,7 @@ from models.arima_forecaster import auto_arima_forecast
 from models.prophet_forecaster import prophet_forecast
 from models.sarima_forecaster import sarima_forecast
 from models.lstm_forecaster import lstm_forecast
+from api.auth_middleware import require_api_key
 
 app = Flask(__name__)
 CORS(app)  # Enable CORS for backend communication
@@ -37,6 +38,7 @@ def health_check():
 
 
 @app.route('/api/forecast', methods=['POST'])
+@require_api_key
 def create_forecast():
     """
     Create blood inventory forecast using selected ML model
@@ -128,6 +130,7 @@ def create_forecast():
 
 
 @app.route('/api/models', methods=['GET'])
+@require_api_key
 def list_models():
     """List available forecasting models"""
     return jsonify({
