@@ -169,10 +169,13 @@ All 4 models are **fully implemented** in `/ml`:
 - `POST /api/forecast` - Generate forecast (supports all 4 models)
 - `GET /api/models` - List available models with parameters
 
-### Scraper (Port 8080)
+### Scraper (Port 8080) - 🔒 Secured with API Key
 
-- `POST /api/scraper/trigger` - Manual trigger
-- `GET /api/scraper/status` - Last scraping status
+**⚠️ Important:** Scraper API is secured and only accessible with valid API key via `X-API-Key` header.
+
+- `POST /api/scraper/trigger-all` - Trigger scraping for all RCKiK (requires API key)
+- `POST /api/scraper/trigger/{rckikCode}` - Trigger scraping for specific RCKiK (requires API key)
+- `GET /api/scraper/health` - Health check (public, no API key required)
 
 ## Authentication & Authorization
 
@@ -250,6 +253,33 @@ Services run in this order:
 - Inventory status (CRITICALLY_LOW to OPTIMAL)
 - RCKiK source
 
+## Security
+
+### Scraper API Security
+
+The Scraper service is secured with **two layers of protection**:
+
+1. **API Key Authentication** (Application Layer)
+   - All scraper endpoints (except `/health`) require `X-API-Key` header
+   - Filter: `ApiKeyFilter.java` validates the API key
+   - Configuration: `scraper.api.key` property (environment variable: `SCRAPER_API_KEY`)
+   - Backend automatically includes API key in all requests to scraper
+
+2. **Network Isolation** (Infrastructure Layer - Docker only)
+   - Scraper port (8080) is NOT exposed to host machine in Docker
+   - Only accessible within `mkrew-network` Docker network
+   - Backend communicates with scraper via internal Docker DNS: `http://scraper:8080`
+   - External requests cannot reach scraper directly
+
+**Configuration:**
+- Set `SCRAPER_API_KEY` environment variable or use default value
+- Default: `change-this-secure-api-key-in-production-mkrew-scraper-2024`
+- ⚠️ **Important:** Change the API key in production!
+
+**Local Development:**
+- Scraper is accessible at `http://localhost:8080` (port exposed)
+- Still requires API key for all requests (except `/health`)
+
 ## Important Notes for Development
 
 1. **Database Migrations:** Use Liquibase (NOT Flyway). YAML format in `/db/changelog/changes/`
@@ -258,9 +288,12 @@ Services run in this order:
 4. **Backend-ML Communication:**
    - Local: `http://localhost:5000`
    - Docker: `http://ml:5000`
-5. **Build Tool:** Gradle (Kotlin DSL) for Java services
-6. **Java Version:** 21 (required)
-7. **Python Version:** 3.11+ (required for ML service)
+5. **Scraper Security:**
+   - API Key required for all endpoints except `/health`
+   - In Docker: network isolation (port not exposed to host)
+6. **Build Tool:** Gradle (Kotlin DSL) for Java services
+7. **Java Version:** 21 (required)
+8. **Python Version:** 3.11+ (required for ML service)
 
 ## Running the Project
 

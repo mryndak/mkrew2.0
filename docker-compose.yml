@@ -48,8 +48,10 @@ services:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/mkrew
       SPRING_DATASOURCE_USERNAME: mkrew
       SPRING_DATASOURCE_PASSWORD: mkrew123
-    ports:
-      - "8080:8080"
+      SCRAPER_API_KEY: ${SCRAPER_API_KEY:-change-this-secure-api-key-in-production-mkrew-scraper-2024}
+    # Network isolation: scraper port NOT exposed to host, only accessible within Docker network
+    expose:
+      - "8080"
     networks:
       - mkrew-network
     depends_on:
@@ -92,6 +94,7 @@ services:
       JWT_SECRET: your-256-bit-secret-key-change-this-in-production-mkrew-blood-inventory-system
       JWT_EXPIRATION: 86400000
       SCRAPER_SERVICE_URL: http://scraper:8080
+      SCRAPER_API_KEY: ${SCRAPER_API_KEY:-change-this-secure-api-key-in-production-mkrew-scraper-2024}
       ML_SERVICE_URL: http://ml:5000
     ports:
       - "8081:8081"
