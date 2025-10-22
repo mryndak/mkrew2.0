@@ -1,0 +1,278 @@
+---
+import Layout from '../layouts/Layout.astro';
+
+const bloodTypes = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'];
+const rckikCenters = [
+	'Białystok', 'Bydgoszcz', 'Gdańsk', 'Kalisz', 'Katowice', 'Kielce',
+	'Kraków', 'Lublin', 'Łódź', 'Olsztyn', 'Opole', 'Poznań',
+	'Racibórz', 'Radom', 'Rzeszów', 'Słupsk', 'Szczecin', 'Warszawa',
+	'Wałbrzych', 'Wrocław', 'Zielona Góra'
+];
+
+const stats = [
+	{ label: 'Całkowite zapasy', value: '2,450', unit: 'jednostek', change: '+12%', trend: 'up' },
+	{ label: 'Krytyczne niedobory', value: '3', unit: 'centra', change: '-2', trend: 'down' },
+	{ label: 'Prognoza na dziś', value: '89%', unit: 'dostępność', change: '+5%', trend: 'up' },
+	{ label: 'Aktywne alarmy', value: '7', unit: 'alertów', change: '+3', trend: 'up' },
+];
+
+const recentAlerts = [
+	{ center: 'Warszawa', bloodType: 'O-', level: 'critical', message: 'Krytycznie niski poziom' },
+	{ center: 'Kraków', bloodType: 'AB-', level: 'warning', message: 'Zapasy poniżej normy' },
+	{ center: 'Gdańsk', bloodType: 'A+', level: 'warning', message: 'Prognozowany niedobór' },
+];
+
+const centerData = [
+	{ center: 'Warszawa', 'O+': 145, 'O-': 23, 'A+': 189, 'A-': 45, 'B+': 98, 'B-': 34, 'AB+': 56, 'AB-': 12, total: 602, status: 'good' },
+	{ center: 'Kraków', 'O+': 123, 'O-': 18, 'A+': 167, 'A-': 38, 'B+': 87, 'B-': 28, 'AB+': 45, 'AB-': 8, total: 514, status: 'warning' },
+	{ center: 'Gdańsk', 'O+': 98, 'O-': 15, 'A+': 145, 'A-': 32, 'B+': 76, 'B-': 22, 'AB+': 38, 'AB-': 7, total: 433, status: 'warning' },
+	{ center: 'Wrocław', 'O+': 156, 'O-': 28, 'A+': 198, 'A-': 52, 'B+': 112, 'B-': 38, 'AB+': 67, 'AB-': 15, total: 666, status: 'good' },
+	{ center: 'Poznań', 'O+': 134, 'O-': 22, 'A+': 178, 'A-': 42, 'B+': 95, 'B-': 31, 'AB+': 52, 'AB-': 11, total: 565, status: 'good' },
+];
+---
+
+<Layout title="Dashboard - MKrew 2.0">
+	<div class="min-h-screen bg-background flex h-screen overflow-hidden">
+		<!-- Sidebar -->
+		<aside class="w-64 bg-sidebar border-r border-sidebar-border flex flex-col h-full overflow-y-auto">
+			<div class="p-6 border-b border-sidebar-border">
+				<div class="flex items-center space-x-3">
+					<div class="w-10 h-10 bg-sidebar-primary rounded-lg flex items-center justify-center">
+						<span class="text-sidebar-primary-foreground text-2xl">🩸</span>
+					</div>
+					<div>
+						<h1 class="text-xl font-bold text-sidebar-foreground">mKrew 2.0</h1>
+						<p class="text-xs text-muted-foreground">Dashboard</p>
+					</div>
+				</div>
+			</div>
+
+			<nav class="flex-1 p-4 space-y-2">
+				<a href="/dashboard" class="flex items-center space-x-3 px-4 py-3 rounded-lg bg-sidebar-accent text-sidebar-accent-foreground font-medium">
+					<span>📊</span>
+					<span>Przegląd</span>
+				</a>
+				<a href="/dashboard/forecasts" class="flex items-center space-x-3 px-4 py-3 rounded-lg text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition">
+					<span>🔮</span>
+					<span>Prognozy</span>
+				</a>
+				<a href="/dashboard/centers" class="flex items-center space-x-3 px-4 py-3 rounded-lg text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition">
+					<span>🏥</span>
+					<span>Centra RCKiK</span>
+				</a>
+				<a href="/dashboard/alerts" class="flex items-center space-x-3 px-4 py-3 rounded-lg text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition">
+					<span>⚠️</span>
+					<span>Alerty</span>
+				</a>
+				<a href="/dashboard/history" class="flex items-center space-x-3 px-4 py-3 rounded-lg text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition">
+					<span>📈</span>
+					<span>Historia</span>
+				</a>
+				<a href="/dashboard/settings" class="flex items-center space-x-3 px-4 py-3 rounded-lg text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition">
+					<span>⚙️</span>
+					<span>Ustawienia</span>
+				</a>
+			</nav>
+
+			<div class="p-4 border-t border-sidebar-border">
+				<div class="flex items-center space-x-3 px-4 py-3">
+					<div class="w-8 h-8 bg-sidebar-primary rounded-full flex items-center justify-center text-sidebar-primary-foreground font-bold text-sm">
+						U
+					</div>
+					<div class="flex-1">
+						<p class="text-sm font-medium text-sidebar-foreground">User</p>
+						<p class="text-xs text-muted-foreground">Administrator</p>
+					</div>
+				</div>
+			</div>
+		</aside>
+
+		<!-- Main Content -->
+		<main class="flex-1 overflow-auto h-screen">
+			<!-- Header -->
+			<header class="bg-card border-b border-border px-6 py-4 sticky top-0 z-10">
+				<div class="flex flex-col md:flex-row md:justify-between md:items-center gap-3">
+					<div>
+						<h2 class="text-2xl font-bold text-foreground">Przegląd systemu</h2>
+						<p class="text-sm text-muted-foreground">Aktualny stan zapasów krwi w Polsce</p>
+					</div>
+					<div class="flex items-center gap-3">
+						<button class="px-4 py-2 bg-secondary text-secondary-foreground rounded-lg hover:opacity-90 transition text-sm">
+							📅 Dziś: {new Date().toLocaleDateString('pl-PL')}
+						</button>
+						<button class="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:opacity-90 transition text-sm">
+							🔄 Odśwież dane
+						</button>
+					</div>
+				</div>
+			</header>
+
+			<div class="p-6 space-y-6">
+				<!-- Stats Cards -->
+				<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+					{stats.map(stat => (
+						<div class="bg-card border border-border rounded-xl p-4 hover:border-primary/50 transition">
+							<div class="flex justify-between items-start mb-2">
+								<p class="text-xs text-muted-foreground">{stat.label}</p>
+								<span class={`text-xs px-2 py-0.5 rounded ${stat.trend === 'up' ? 'bg-accent text-accent-foreground' : 'bg-destructive/10 text-destructive'}`}>
+									{stat.change}
+								</span>
+							</div>
+							<p class="text-2xl font-bold text-foreground mb-0.5">{stat.value}</p>
+							<p class="text-xs text-muted-foreground">{stat.unit}</p>
+						</div>
+					))}
+				</div>
+
+				<!-- Alerts Section -->
+				<div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+					<!-- Recent Alerts -->
+					<div class="lg:col-span-2 bg-card border border-border rounded-xl p-5">
+						<div class="flex justify-between items-center mb-4">
+							<h3 class="text-lg font-bold text-foreground">Najnowsze alerty</h3>
+							<a href="/dashboard/alerts" class="text-sm text-primary hover:underline">Zobacz wszystkie →</a>
+						</div>
+						<div class="space-y-3">
+							{recentAlerts.map(alert => (
+								<div class={`p-3 rounded-lg border-l-4 ${alert.level === 'critical' ? 'bg-destructive/10 border-destructive' : 'bg-accent/30 border-accent'}`}>
+									<div class="flex justify-between items-start">
+										<div class="flex-1">
+											<div class="flex items-center gap-2 mb-1">
+												<span class="font-bold text-foreground text-sm">{alert.center}</span>
+												<span class="px-2 py-0.5 bg-primary/20 text-primary text-xs rounded font-medium">{alert.bloodType}</span>
+											</div>
+											<p class="text-sm text-muted-foreground">{alert.message}</p>
+										</div>
+										<button class="text-muted-foreground hover:text-foreground ml-2">
+											<span class="text-xl leading-none">×</span>
+										</button>
+									</div>
+								</div>
+							))}
+						</div>
+					</div>
+
+					<!-- Quick Actions -->
+					<div class="bg-card border border-border rounded-xl p-5">
+						<h3 class="text-lg font-bold text-foreground mb-4">Szybkie akcje</h3>
+						<div class="space-y-2">
+							<button class="w-full px-4 py-2.5 bg-primary text-primary-foreground rounded-lg hover:opacity-90 transition text-left flex items-center justify-between text-sm">
+								<span>📋 Nowy raport</span>
+								<span>→</span>
+							</button>
+							<button class="w-full px-4 py-2.5 bg-secondary text-secondary-foreground rounded-lg hover:opacity-90 transition text-left flex items-center justify-between text-sm">
+								<span>🔍 Analiza danych</span>
+								<span>→</span>
+							</button>
+							<button class="w-full px-4 py-2.5 bg-secondary text-secondary-foreground rounded-lg hover:opacity-90 transition text-left flex items-center justify-between text-sm">
+								<span>📊 Export CSV</span>
+								<span>→</span>
+							</button>
+							<button class="w-full px-4 py-2.5 bg-secondary text-secondary-foreground rounded-lg hover:opacity-90 transition text-left flex items-center justify-between text-sm">
+								<span>⚙️ Konfiguracja</span>
+								<span>→</span>
+							</button>
+						</div>
+					</div>
+				</div>
+
+				<!-- Blood Types Overview -->
+				<div class="bg-card border border-border rounded-xl p-5">
+					<h3 class="text-lg font-bold text-foreground mb-4">Dostępność grup krwi (wszystkie centra)</h3>
+					<div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-3">
+						{bloodTypes.map((type, index) => {
+							const availability = Math.floor(Math.random() * 40) + 60; // Mock data
+							const isLow = availability < 75;
+							return (
+								<div class="text-center p-3 rounded-lg border border-border hover:border-primary/50 transition">
+									<div class={`text-2xl font-bold mb-1 ${isLow ? 'text-destructive' : 'text-primary'}`}>
+										{type}
+									</div>
+									<div class="text-xl font-bold text-foreground mb-0.5">{availability}%</div>
+									<div class="text-xs text-muted-foreground mb-2">dostępność</div>
+									<div class="h-1.5 bg-secondary rounded-full overflow-hidden">
+										<div
+											class={`h-full ${isLow ? 'bg-destructive' : 'bg-primary'}`}
+											style={`width: ${availability}%`}
+										></div>
+									</div>
+								</div>
+							);
+						})}
+					</div>
+				</div>
+
+				<!-- Centers Table -->
+				<div class="bg-card border border-border rounded-xl p-5">
+					<div class="flex flex-col md:flex-row md:justify-between md:items-center gap-3 mb-4">
+						<h3 class="text-lg font-bold text-foreground">Zapasy w centrach RCKiK</h3>
+						<div class="flex gap-2 flex-wrap">
+							<select class="px-3 py-2 bg-input border border-border rounded-lg text-foreground text-sm">
+								<option>Wszystkie centra</option>
+								{rckikCenters.map(center => (
+									<option>{center}</option>
+								))}
+							</select>
+							<select class="px-3 py-2 bg-input border border-border rounded-lg text-foreground text-sm">
+								<option>Wszystkie grupy</option>
+								{bloodTypes.map(type => (
+									<option>{type}</option>
+								))}
+							</select>
+						</div>
+					</div>
+					<div class="overflow-x-auto -mx-5 px-5">
+						<table class="w-full">
+							<thead>
+								<tr class="border-b border-border">
+									<th class="text-left py-2 px-3 text-xs font-semibold text-foreground">Centrum</th>
+									{bloodTypes.map(type => (
+										<th class="text-center py-2 px-2 text-xs font-semibold text-foreground">{type}</th>
+									))}
+									<th class="text-center py-2 px-3 text-xs font-semibold text-foreground">Suma</th>
+									<th class="text-center py-2 px-3 text-xs font-semibold text-foreground">Status</th>
+								</tr>
+							</thead>
+							<tbody>
+								{centerData.map((row) => (
+									<tr class="border-b border-border hover:bg-muted/50 transition">
+										<td class="py-2 px-3 font-medium text-foreground text-sm">{row.center}</td>
+										{bloodTypes.map(type => (
+											<td class="text-center py-2 px-2 text-muted-foreground text-sm">{row[type]}</td>
+										))}
+										<td class="text-center py-2 px-3 font-bold text-foreground text-sm">{row.total}</td>
+										<td class="text-center py-2 px-3">
+											<span class={`px-2 py-0.5 rounded-full text-xs font-medium ${row.status === 'good' ? 'bg-accent text-accent-foreground' : 'bg-destructive/10 text-destructive'}`}>
+												{row.status === 'good' ? '✓ OK' : '⚠ Uwaga'}
+											</span>
+										</td>
+									</tr>
+								))}
+							</tbody>
+						</table>
+					</div>
+				</div>
+			</div>
+		</main>
+	</div>
+</Layout>
+
+<style>
+	/* Custom scrollbar for sidebar */
+	aside::-webkit-scrollbar {
+		width: 6px;
+	}
+
+	aside::-webkit-scrollbar-track {
+		background: transparent;
+	}
+
+	aside::-webkit-scrollbar-thumb {
+		background: var(--sidebar-border);
+		border-radius: 3px;
+	}
+
+	aside::-webkit-scrollbar-thumb:hover {
+		background: var(--border);
+	}
+</style>
